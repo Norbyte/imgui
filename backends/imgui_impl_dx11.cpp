@@ -318,7 +318,7 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
     device->IASetInputLayout(old.InputLayout); if (old.InputLayout) old.InputLayout->Release();
 }
 
-static void ImGui_ImplDX11_CreateFontsTexture()
+static bool ImGui_ImplDX11_CreateFontsTexture()
 {
     // Build texture atlas
     ImGuiIO& io = ImGui::GetIO();
@@ -346,7 +346,11 @@ static void ImGui_ImplDX11_CreateFontsTexture()
         subResource.pSysMem = pixels;
         subResource.SysMemPitch = desc.Width * 4;
         subResource.SysMemSlicePitch = 0;
-        bd->pd3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
+        HRESULT result = bd->pd3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
+        if (pTexture == nullptr || result != S_OK) {
+            printf("CreateTexture2D failed! Texture size: %d x %d, HRESULT 0x%08x\r\n", desc.Width, desc.Height, result);
+            return false;
+        }
         IM_ASSERT(pTexture != nullptr);
 
         // Create texture view
@@ -362,6 +366,8 @@ static void ImGui_ImplDX11_CreateFontsTexture()
 
     // Store our identifier
     io.Fonts->SetTexID((ImTextureID)bd->pFontTextureView);
+
+    return true;
 }
 
 static void ImGui_ImplDX11_DestroyFontsTexture()
@@ -373,6 +379,13 @@ static void ImGui_ImplDX11_DestroyFontsTexture()
         bd->pFontTextureView = nullptr;
         ImGui::GetIO().Fonts->SetTexID(0); // We copied data->pFontTextureView to io.Fonts->TexID so let's clear that as well.
     }
+}
+
+bool ImGui_ImplDX11_RenderObjectsInitialized()
+{
+    ImGui_ImplDX11_Data* bd = ImGui_ImplDX11_GetBackendData();
+    return bd->pd3dDevice != nullptr
+        && bd->pFontTextureView != nullptr;
 }
 
 bool    ImGui_ImplDX11_CreateDeviceObjects()
@@ -540,7 +553,9 @@ bool    ImGui_ImplDX11_CreateDeviceObjects()
         bd->pd3dDevice->CreateSamplerState(&desc, &bd->pFontSampler);
     }
 
-    ImGui_ImplDX11_CreateFontsTexture();
+    if (!ImGui_ImplDX11_CreateFontsTexture()) {
+        return false;
+    }
 
     return true;
 }
