@@ -2549,7 +2549,7 @@ void    ImFontAtlas::GetTexDataAsAlpha8(unsigned char** out_pixels, int* out_wid
     if (out_bytes_per_pixel) *out_bytes_per_pixel = 1;
 }
 
-void    ImFontAtlas::GetTexDataAsRGBA32(unsigned char** out_pixels, int* out_width, int* out_height, int* out_bytes_per_pixel)
+bool    ImFontAtlas::GetTexDataAsRGBA32(unsigned char** out_pixels, int* out_width, int* out_height, int* out_bytes_per_pixel)
 {
     // Convert to RGBA32 format on demand
     // Although it is likely to be the most commonly used format, our font rendering is 1 channel / 8 bpp
@@ -2560,6 +2560,10 @@ void    ImFontAtlas::GetTexDataAsRGBA32(unsigned char** out_pixels, int* out_wid
         if (pixels)
         {
             TexPixelsRGBA32 = (unsigned int*)IM_ALLOC((size_t)TexWidth * (size_t)TexHeight * 4);
+            if (!TexPixelsRGBA32) {
+                return false;
+            }
+
             const unsigned char* src = pixels;
             unsigned int* dst = TexPixelsRGBA32;
             for (int n = TexWidth * TexHeight; n > 0; n--)
@@ -2571,6 +2575,7 @@ void    ImFontAtlas::GetTexDataAsRGBA32(unsigned char** out_pixels, int* out_wid
     if (out_width) *out_width = TexWidth;
     if (out_height) *out_height = TexHeight;
     if (out_bytes_per_pixel) *out_bytes_per_pixel = 4;
+    return true;
 }
 
 ImFont* ImFontAtlas::AddFont(const ImFontConfig* font_cfg)

@@ -325,7 +325,9 @@ static bool ImGui_ImplDX11_CreateFontsTexture()
     ImGui_ImplDX11_Data* bd = ImGui_ImplDX11_GetBackendData();
     unsigned char* pixels;
     int width, height;
-    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+    if (!io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height)) {
+        return false;
+    }
 
     // Upload texture to graphics system
     {
