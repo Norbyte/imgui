@@ -4571,7 +4571,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
         int new_len = (int)ImStrlen(buf);
         IM_ASSERT(new_len + 1 <= buf_size && "Is your input buffer properly zero-terminated?");
         state->WantReloadUserBuf = false;
-        InputTextReconcileUndoState(state, state->TextA.Data, state->TextLen, buf, new_len);
+        InputTextReconcileUndoState(state, state->TextA.Data, ImMin(state->TextLen, state->TextA.Size), buf, new_len);
         state->TextA.resize(buf_size + 1); // we use +1 to make sure that .Data is always pointing to at least an empty string.
         state->TextLen = new_len;
         memcpy(state->TextA.Data, buf, state->TextLen + 1);
