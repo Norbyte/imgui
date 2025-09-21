@@ -10760,6 +10760,47 @@ void ImGui::SameLine(float offset_from_start_x, float spacing_w)
     window->DC.IsSameLine = true;
 }
 
+void ImGui::SamePosition(float offset_from_start_x, float offset_from_start_y, float spacing_w, float spacing_h)
+{
+    ImGuiContext& g = *GImGui;
+    ImGuiWindow* window = g.CurrentWindow;
+    if (window->SkipItems)
+        return;
+
+    if (offset_from_start_x != 0.0f)
+    {
+        if (spacing_w < 0.0f)
+            spacing_w = 0.0f;
+        window->DC.CursorPos.x = window->Pos.x - window->Scroll.x + offset_from_start_x + spacing_w + window->DC.GroupOffset.x + window->DC.ColumnsOffset.x;
+        window->DC.CursorPos.y = window->DC.CursorPosPrevLine.y;
+    }
+    else
+    {
+        if (spacing_w < 0.0f)
+            spacing_w = g.Style.ItemSpacing.x;
+        window->DC.CursorPos.x = window->DC.CursorPosPrevLine.x + spacing_w;
+        window->DC.CursorPos.y = window->DC.CursorPosPrevLine.y;
+    }
+
+    if (offset_from_start_y != 0.0f)
+    {
+        if (spacing_h < 0.0f)
+            spacing_h = 0.0f;
+        window->DC.CursorPos.y = window->Pos.y - window->Scroll.y + offset_from_start_y + spacing_h;
+    }
+    else
+    {
+        if (spacing_h < 0.0f)
+            spacing_h = g.Style.ItemSpacing.x;
+        window->DC.CursorPos.y = window->DC.CursorPosPrevLine.y + spacing_h;
+    }
+
+    window->DC.CurrLineSize = window->DC.PrevLineSize;
+    window->DC.CurrLineTextBaseOffset = window->DC.PrevLineTextBaseOffset;
+    window->DC.IsSameLine = true;
+    window->DC.IsSetPos = true;
+}
+
 ImVec2 ImGui::GetCursorScreenPos()
 {
     ImGuiWindow* window = GetCurrentWindowRead();
